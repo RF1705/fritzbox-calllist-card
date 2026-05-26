@@ -141,7 +141,7 @@ class FritzboxCalllistCard extends HTMLElement {
     const title = typeof this.config.title === "string" ? this.config.title.trim() : "";
     const fontSize = Math.max(10, Math.min(24, Number(this.config.font_size || DEFAULT_FONT_SIZE)));
     const titleHeight = title ? 36 : 0;
-    const rowCount = Math.max(1, Math.min(maxItems, history.length + (isActive ? 1 : 0)));
+    const rowCount = maxItems;
     const rowHeight = Math.max(
       40,
       Math.floor((DEFAULT_TARGET_HEIGHT - CARD_VERTICAL_PADDING - titleHeight - ROW_GAP * (rowCount - 1)) / rowCount),
