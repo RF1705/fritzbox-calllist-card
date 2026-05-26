@@ -33,7 +33,6 @@ Resource type: `JavaScript module`.
 ```yaml
 type: custom:fritzbox-calllist-card
 entity: sensor.fritzbox_calllist
-title: Phone
 max_items: 4
 font_size: 14
 language: auto
@@ -52,7 +51,7 @@ The card includes a visual Lovelace editor for:
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
 | `entity` | string | `sensor.fritzbox_calllist` | FRITZ!Box Calllist sensor entity |
-| `title` | string | localized | Card title |
+| `title` | string | empty | Optional card title. The header is hidden when empty. |
 | `max_items` | number | `4` | Visible history entries |
 | `font_size` | number | `14` | Main text size in pixels |
 | `language` | string | `auto` | `auto`, `de` or `en` |

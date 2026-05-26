@@ -65,7 +65,17 @@ function normalizeLanguage(value) {
   return String(value || "en").toLowerCase().startsWith("de") ? "de" : "en";
 }
 
+function isUnknownValue(value) {
+  const normalized = String(value ?? "").trim().toLowerCase();
+  return !normalized || normalized === "unknown" || normalized === "unbekannt";
+}
+
 class FritzboxCalllistCard extends HTMLElement {
+  constructor() {
+    super();
+    this.attachShadow({ mode: "open" });
+  }
+
   static getConfigElement() {
     return document.createElement("fritzbox-calllist-card-editor");
   }
@@ -124,17 +134,18 @@ class FritzboxCalllistCard extends HTMLElement {
     const isActive = Boolean(attrs.is_active && live);
     const limit = Math.max(1, Number(this.config.max_items || 4)) - (isActive ? 1 : 0);
     const texts = this.localize();
-    const title = this.config.title || texts.title;
+    const title = typeof this.config.title === "string" ? this.config.title.trim() : "";
     const fontSize = Math.max(10, Math.min(24, Number(this.config.font_size || DEFAULT_FONT_SIZE)));
 
     const liveHtml = isActive ? this.renderLive(live) : "";
     const historyHtml = history.slice(0, limit).map((call) => this.renderHistory(call)).join("");
     const emptyHtml = !isActive && !history.length ? `<div class="empty">${texts.empty}</div>` : "";
+    const titleHtml = title ? `<div class="header">${this.escape(title)}</div>` : "";
 
-    this.innerHTML = `
+    this.shadowRoot.innerHTML = `
       <ha-card>
         <div class="card">
-          <div class="header">${this.escape(title)}</div>
+          ${titleHtml}
           ${liveHtml}
           ${isActive && history.length ? `<div class="divider"></div>` : ""}
           <div class="history">${historyHtml}${emptyHtml}</div>
@@ -304,8 +315,8 @@ class FritzboxCalllistCard extends HTMLElement {
 
   liveLabel(live) {
     const texts = this.localize();
-    const name = this.escape(live.name || texts.unknown);
-    const number = this.escape(live.number || texts.unknown);
+    const name = this.displayName(live.name, texts);
+    const number = this.displayName(live.number, texts);
 
     if (live.state === "ringing") return `${texts.ringing}: ${name} (${number})`;
     if (live.state === "dialing") return `${texts.dialing}: ${name} (${number})`;
@@ -314,14 +325,18 @@ class FritzboxCalllistCard extends HTMLElement {
 
   historyLabel(call) {
     const texts = this.localize();
-    const name = this.escape(call.name || texts.unknown);
-    const number = this.escape(call.number || texts.unknown);
+    const name = this.displayName(call.name, texts);
+    const number = this.displayName(call.number, texts);
 
     if (call.type === "outgoing") return `${texts.outgoing} ${name} (${number})`;
     if (call.type === "missed") return `${texts.missed} ${name} (${number})`;
     if (call.type === "not_answered") return `${texts.notAnswered} ${name} (${number})`;
     if (call.type === "incoming") return `${texts.incoming} ${name} (${number})`;
     return this.escape(call.text || "");
+  }
+
+  displayName(value, texts) {
+    return this.escape(isUnknownValue(value) ? texts.unknown : value);
   }
 
   liveDuration(live) {
@@ -501,7 +516,7 @@ if (!window.customCards.some((card) => card.type === CARD_TYPE)) {
     name: "FRITZ!Box Calllist Card",
     description: TRANSLATIONS.en.cardDescription,
     preview: true,
-    documentationURL: "https://github.com/RF1705/fritzbox-calllist",
+    documentationURL: "https://github.com/RF1705/fritzbox-calllist-card",
   });
 }
 
