@@ -4,6 +4,7 @@ const DEFAULT_ENTITY = "sensor.fritzbox_calllist";
 const DEFAULT_MAX_ITEMS = 4;
 const DEFAULT_FONT_SIZE = 14;
 const DEFAULT_TARGET_HEIGHT = 265;
+const EXTRA_ITEM_HEIGHT = 56;
 const CARD_VERTICAL_PADDING = 32;
 const ROW_GAP = 8;
 
@@ -126,7 +127,8 @@ class FritzboxCalllistCard extends HTMLElement {
   }
 
   getCardSize() {
-    return 3;
+    const maxItems = Math.max(1, Number(this.config?.max_items || DEFAULT_MAX_ITEMS));
+    return Math.max(3, Math.ceil((DEFAULT_TARGET_HEIGHT + Math.max(0, maxItems - DEFAULT_MAX_ITEMS) * EXTRA_ITEM_HEIGHT) / 80));
   }
 
   renderIfNeeded() {
@@ -174,9 +176,10 @@ class FritzboxCalllistCard extends HTMLElement {
     const fontSize = Math.max(10, Math.min(24, Number(this.config.font_size || DEFAULT_FONT_SIZE)));
     const titleHeight = title ? 36 : 0;
     const rowCount = maxItems;
+    const targetHeight = DEFAULT_TARGET_HEIGHT + Math.max(0, rowCount - DEFAULT_MAX_ITEMS) * EXTRA_ITEM_HEIGHT;
     const rowHeight = Math.max(
       40,
-      Math.floor((DEFAULT_TARGET_HEIGHT - CARD_VERTICAL_PADDING - titleHeight - ROW_GAP * (rowCount - 1)) / rowCount),
+      Math.ceil((targetHeight - CARD_VERTICAL_PADDING - titleHeight - ROW_GAP * (rowCount - 1)) / rowCount),
     );
 
     const liveHtml = isActive ? this.renderLive(live) : "";
