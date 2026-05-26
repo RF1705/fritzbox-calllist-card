@@ -103,26 +103,57 @@ class FritzboxCalllistCard extends HTMLElement {
       language: "auto",
       ...config,
     };
+    this._renderSignature = undefined;
+    this.render();
   }
 
   set hass(hass) {
     this._hass = hass;
-    this.render();
+    this.renderIfNeeded();
   }
 
   connectedCallback() {
-    this._timer = window.setInterval(() => this.render(), 1000);
+    this._connected = true;
+    this.scheduleTimeUpdate();
   }
 
   disconnectedCallback() {
+    this._connected = false;
     if (this._timer) {
-      window.clearInterval(this._timer);
+      window.clearTimeout(this._timer);
       this._timer = undefined;
     }
   }
 
   getCardSize() {
     return 3;
+  }
+
+  renderIfNeeded() {
+    if (!this.config || !this._hass) {
+      return;
+    }
+
+    const signature = this.renderSignature();
+    if (signature === this._renderSignature) {
+      return;
+    }
+
+    this._renderSignature = signature;
+    this.render();
+  }
+
+  renderSignature() {
+    const entity = this._hass.states[this.config.entity];
+    return JSON.stringify({
+      entity: this.config.entity,
+      state: entity?.state,
+      updated: entity?.last_updated,
+      language: this.config.language === "auto" ? this._hass.language : this.config.language,
+      title: this.config.title || "",
+      max_items: this.config.max_items || DEFAULT_MAX_ITEMS,
+      font_size: this.config.font_size || DEFAULT_FONT_SIZE,
+    });
   }
 
   render() {
@@ -135,6 +166,7 @@ class FritzboxCalllistCard extends HTMLElement {
     const history = Array.isArray(attrs.history) ? attrs.history : [];
     const live = attrs.live || null;
     const isActive = Boolean(attrs.is_active && live);
+    this._isActive = isActive;
     const maxItems = Math.max(1, Number(this.config.max_items || DEFAULT_MAX_ITEMS));
     const limit = maxItems - (isActive ? 1 : 0);
     const texts = this.localize();
@@ -281,19 +313,22 @@ class FritzboxCalllistCard extends HTMLElement {
         }
       </style>
     `;
+    this.updateTimeText();
+    this.scheduleTimeUpdate();
   }
 
   renderLive(live) {
     const icon = this.liveIcon(live.state);
     const label = this.liveLabel(live);
-    const duration = this.formatDuration(this.liveDuration(live));
+    const startedAt = Number(live.started_at || 0);
+    const duration = Number(live.duration || 0);
 
     return `
       <div class="live-call">
         <ha-icon class="${this.escape(live.state)}" icon="${icon}"></ha-icon>
         <div class="live-content">
           <div class="label">${label}</div>
-          <div class="duration">${duration}</div>
+          <div class="duration" data-started-at="${startedAt}" data-duration="${duration}"></div>
         </div>
       </div>
     `;
@@ -301,14 +336,15 @@ class FritzboxCalllistCard extends HTMLElement {
 
   renderHistory(call) {
     const type = call.type || "incoming";
-    const duration = Number.isFinite(call.duration) ? ` · ${this.formatDuration(call.duration)}` : "";
+    const timestamp = Number(call.time || 0);
+    const duration = Number.isFinite(call.duration) ? Number(call.duration) : "";
 
     return `
       <div class="history-row">
         <ha-icon class="${this.escape(type)}" icon="${this.historyIcon(type)}"></ha-icon>
         <div class="history-content">
           <div class="label">${this.historyLabel(call)}</div>
-          <div class="meta">${this.relativeTime(call.time)}${duration}</div>
+          <div class="meta" data-timestamp="${timestamp}" data-duration="${duration}"></div>
         </div>
       </div>
     `;
@@ -358,6 +394,46 @@ class FritzboxCalllistCard extends HTMLElement {
       return Number(live.duration || 0);
     }
     return Math.max(0, Math.floor(Date.now() / 1000 - Number(live.started_at)));
+  }
+
+  updateTimeText() {
+    if (!this.shadowRoot) {
+      return;
+    }
+
+    this.shadowRoot.querySelectorAll(".duration").forEach((element) => {
+      const startedAt = Number(element.dataset.startedAt || 0);
+      const duration = startedAt
+        ? Math.max(0, Math.floor(Date.now() / 1000 - startedAt))
+        : Number(element.dataset.duration || 0);
+      element.textContent = this.formatDuration(duration);
+    });
+
+    this.shadowRoot.querySelectorAll(".meta").forEach((element) => {
+      const timestamp = Number(element.dataset.timestamp || 0);
+      const duration = element.dataset.duration;
+      const durationText = duration !== "" && Number.isFinite(Number(duration))
+        ? ` · ${this.formatDuration(Number(duration))}`
+        : "";
+      element.textContent = `${this.relativeTime(timestamp)}${durationText}`;
+    });
+  }
+
+  scheduleTimeUpdate() {
+    if (this._timer) {
+      window.clearTimeout(this._timer);
+      this._timer = undefined;
+    }
+
+    if (!this._connected || !this.config || !this._hass) {
+      return;
+    }
+
+    const delay = this._isActive ? 1000 : 60000;
+    this._timer = window.setTimeout(() => {
+      this.updateTimeText();
+      this.scheduleTimeUpdate();
+    }, delay);
   }
 
   formatDuration(seconds) {
