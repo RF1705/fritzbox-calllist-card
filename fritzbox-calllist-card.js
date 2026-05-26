@@ -3,6 +3,9 @@ const CARD_TYPE = "fritzbox-calllist-card";
 const DEFAULT_ENTITY = "sensor.fritzbox_calllist";
 const DEFAULT_MAX_ITEMS = 4;
 const DEFAULT_FONT_SIZE = 14;
+const DEFAULT_TARGET_HEIGHT = 265;
+const CARD_VERTICAL_PADDING = 32;
+const ROW_GAP = 8;
 
 const TRANSLATIONS = {
   de: {
@@ -132,10 +135,17 @@ class FritzboxCalllistCard extends HTMLElement {
     const history = Array.isArray(attrs.history) ? attrs.history : [];
     const live = attrs.live || null;
     const isActive = Boolean(attrs.is_active && live);
-    const limit = Math.max(1, Number(this.config.max_items || 4)) - (isActive ? 1 : 0);
+    const maxItems = Math.max(1, Number(this.config.max_items || DEFAULT_MAX_ITEMS));
+    const limit = maxItems - (isActive ? 1 : 0);
     const texts = this.localize();
     const title = typeof this.config.title === "string" ? this.config.title.trim() : "";
     const fontSize = Math.max(10, Math.min(24, Number(this.config.font_size || DEFAULT_FONT_SIZE)));
+    const titleHeight = title ? 36 : 0;
+    const rowCount = Math.max(1, Math.min(maxItems, history.length + (isActive ? 1 : 0)));
+    const rowHeight = Math.max(
+      40,
+      Math.floor((DEFAULT_TARGET_HEIGHT - CARD_VERTICAL_PADDING - titleHeight - ROW_GAP * (rowCount - 1)) / rowCount),
+    );
 
     const liveHtml = isActive ? this.renderLive(live) : "";
     const historyHtml = history.slice(0, limit).map((call) => this.renderHistory(call)).join("");
@@ -158,6 +168,8 @@ class FritzboxCalllistCard extends HTMLElement {
 
         .card {
           --fritzbox-calllist-font-size: ${fontSize}px;
+          --fritzbox-calllist-row-height: ${rowHeight}px;
+          --fritzbox-calllist-row-gap: ${ROW_GAP}px;
           padding: 16px;
         }
 
@@ -176,7 +188,7 @@ class FritzboxCalllistCard extends HTMLElement {
           display: grid;
           gap: 10px;
           grid-template-columns: 28px 1fr;
-          min-height: 32px;
+          min-height: var(--fritzbox-calllist-row-height);
           font-weight: 500;
         }
 
@@ -187,7 +199,7 @@ class FritzboxCalllistCard extends HTMLElement {
           display: grid;
           gap: 10px;
           grid-template-columns: 28px 1fr;
-          min-height: 32px;
+          min-height: var(--fritzbox-calllist-row-height);
         }
 
         ha-icon {
@@ -198,6 +210,7 @@ class FritzboxCalllistCard extends HTMLElement {
 
         .label {
           font-size: var(--fritzbox-calllist-font-size);
+          line-height: 1.25;
           min-width: 0;
           overflow-wrap: anywhere;
         }
@@ -211,6 +224,7 @@ class FritzboxCalllistCard extends HTMLElement {
         .duration {
           color: #7e7e7e;
           font-size: max(11px, calc(var(--fritzbox-calllist-font-size) - 2px));
+          line-height: 1.25;
           white-space: nowrap;
         }
 
@@ -220,7 +234,7 @@ class FritzboxCalllistCard extends HTMLElement {
 
         .history {
           display: grid;
-          gap: 8px;
+          gap: var(--fritzbox-calllist-row-gap);
         }
 
         .empty {
