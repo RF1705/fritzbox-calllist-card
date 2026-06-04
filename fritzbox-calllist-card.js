@@ -3,6 +3,7 @@ const CARD_TYPE = "fritzbox-calllist-card";
 const DEFAULT_ENTITY = "sensor.fritzbox_calllist";
 const DEFAULT_MAX_ITEMS = 4;
 const DEFAULT_FONT_SIZE = 14;
+const DEFAULT_NAME_FORMAT = "first_last";
 const DEFAULT_TARGET_HEIGHT = 265;
 const EXTRA_ITEM_HEIGHT = 56;
 const CARD_VERTICAL_PADDING = 32;
@@ -30,7 +31,10 @@ const TRANSLATIONS = {
     editorTitle: "Titel",
     editorMaxItems: "Einträge",
     editorFontSize: "Schriftgröße",
+    editorNameFormat: "Namensformat",
     editorLanguage: "Sprache",
+    nameFormatFirstLast: "Vorname Nachname",
+    nameFormatLastFirst: "Nachname Vorname",
     langAuto: "Automatisch",
     langGerman: "Deutsch",
     langEnglish: "Englisch",
@@ -57,7 +61,10 @@ const TRANSLATIONS = {
     editorTitle: "Title",
     editorMaxItems: "Entries",
     editorFontSize: "Font size",
+    editorNameFormat: "Name format",
     editorLanguage: "Language",
+    nameFormatFirstLast: "First name Last name",
+    nameFormatLastFirst: "Last name First name",
     langAuto: "Automatic",
     langGerman: "German",
     langEnglish: "English",
@@ -72,6 +79,15 @@ function normalizeLanguage(value) {
 function isUnknownValue(value) {
   const normalized = String(value ?? "").trim().toLowerCase();
   return !normalized || normalized === "unknown" || normalized === "unbekannt";
+}
+
+function formatDisplayName(value, nameFormat = DEFAULT_NAME_FORMAT) {
+  const cleanValue = String(value ?? "").trim().replace(/\s+/g, " ");
+  const parts = cleanValue.split(",").map((part) => part.trim());
+  if (parts.length === 2 && parts[0] && parts[1]) {
+    return nameFormat === "last_first" ? `${parts[0]} ${parts[1]}` : `${parts[1]} ${parts[0]}`;
+  }
+  return cleanValue;
 }
 
 class FritzboxCalllistCard extends HTMLElement {
@@ -89,6 +105,7 @@ class FritzboxCalllistCard extends HTMLElement {
       entity: DEFAULT_ENTITY,
       max_items: DEFAULT_MAX_ITEMS,
       font_size: DEFAULT_FONT_SIZE,
+      name_format: DEFAULT_NAME_FORMAT,
       language: "auto",
     };
   }
@@ -101,6 +118,7 @@ class FritzboxCalllistCard extends HTMLElement {
     this.config = {
       max_items: DEFAULT_MAX_ITEMS,
       font_size: DEFAULT_FONT_SIZE,
+      name_format: DEFAULT_NAME_FORMAT,
       language: "auto",
       ...config,
     };
@@ -155,6 +173,7 @@ class FritzboxCalllistCard extends HTMLElement {
       title: this.config.title || "",
       max_items: this.config.max_items || DEFAULT_MAX_ITEMS,
       font_size: this.config.font_size || DEFAULT_FONT_SIZE,
+      name_format: this.config.name_format || DEFAULT_NAME_FORMAT,
     });
   }
 
@@ -389,7 +408,11 @@ class FritzboxCalllistCard extends HTMLElement {
   }
 
   displayName(value, texts) {
-    return this.escape(isUnknownValue(value) ? texts.unknown : value);
+    return this.escape(
+      isUnknownValue(value)
+        ? texts.unknown
+        : formatDisplayName(value, this.config?.name_format || DEFAULT_NAME_FORMAT),
+    );
   }
 
   liveDuration(live) {
@@ -484,6 +507,7 @@ class FritzboxCalllistCardEditor extends HTMLElement {
       entity: DEFAULT_ENTITY,
       max_items: DEFAULT_MAX_ITEMS,
       font_size: DEFAULT_FONT_SIZE,
+      name_format: DEFAULT_NAME_FORMAT,
       language: "auto",
       ...config,
     };
@@ -562,6 +586,18 @@ class FritzboxCalllistCardEditor extends HTMLElement {
         },
       },
       {
+        name: "name_format",
+        selector: {
+          select: {
+            options: [
+              { value: "first_last", label: texts.nameFormatFirstLast },
+              { value: "last_first", label: texts.nameFormatLastFirst },
+            ],
+            mode: "dropdown",
+          },
+        },
+      },
+      {
         name: "language",
         selector: {
           select: {
@@ -583,6 +619,7 @@ class FritzboxCalllistCardEditor extends HTMLElement {
       title: texts.editorTitle,
       max_items: texts.editorMaxItems,
       font_size: texts.editorFontSize,
+      name_format: texts.editorNameFormat,
       language: texts.editorLanguage,
     };
     return labels[schema.name] || schema.name;
