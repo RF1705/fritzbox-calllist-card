@@ -13,11 +13,6 @@ const TRANSLATIONS = {
   de: {
     title: "Telefon",
     empty: "Keine Anrufe vorhanden",
-    before: "vor",
-    seconds: "sekunden",
-    minutes: "minuten",
-    hours: "stunden",
-    days: "tagen",
     unknown: "Unbekannt",
     ringing: "Anruf von",
     dialing: "Anruf an",
@@ -32,22 +27,13 @@ const TRANSLATIONS = {
     editorMaxItems: "Einträge",
     editorFontSize: "Schriftgröße",
     editorNameFormat: "Namensformat",
-    editorLanguage: "Sprache",
     nameFormatFirstLast: "Vorname Nachname",
     nameFormatLastFirst: "Nachname Vorname",
-    langAuto: "Automatisch",
-    langGerman: "Deutsch",
-    langEnglish: "Englisch",
     cardDescription: "Zeigt Live-Anrufe und den Telefonverlauf aus der FRITZ!Box-Calllist-Integration.",
   },
   en: {
     title: "Phone",
     empty: "No calls available",
-    before: "ago",
-    seconds: "seconds",
-    minutes: "minutes",
-    hours: "hours",
-    days: "days",
     unknown: "Unknown",
     ringing: "Call from",
     dialing: "Call to",
@@ -62,18 +48,95 @@ const TRANSLATIONS = {
     editorMaxItems: "Entries",
     editorFontSize: "Font size",
     editorNameFormat: "Name format",
-    editorLanguage: "Language",
     nameFormatFirstLast: "First name Last name",
     nameFormatLastFirst: "Last name First name",
-    langAuto: "Automatic",
-    langGerman: "German",
-    langEnglish: "English",
     cardDescription: "Shows live calls and call history from the FRITZ!Box Calllist integration.",
+  },
+  fr: {
+    empty: "Aucun appel disponible",
+    unknown: "Inconnu",
+    ringing: "Appel de",
+    dialing: "Appel vers",
+    talking: "Appel avec",
+    outgoing: "Appel avec",
+    incoming: "Appel de",
+    missed: "Appel manque de",
+    notAnswered: "Non joint :",
+    errorEntity: "Veuillez indiquer une entite FRITZ!Box Calllist.",
+    editorEntity: "Entite",
+    editorTitle: "Titre",
+    editorMaxItems: "Entrees",
+    editorFontSize: "Taille de police",
+    editorNameFormat: "Format du nom",
+    nameFormatFirstLast: "Prenom Nom",
+    nameFormatLastFirst: "Nom Prenom",
+    cardDescription: "Affiche les appels en direct et l'historique de la FRITZ!Box Calllist.",
+  },
+  es: {
+    empty: "No hay llamadas disponibles",
+    unknown: "Desconocido",
+    ringing: "Llamada de",
+    dialing: "Llamada a",
+    talking: "Llamada con",
+    outgoing: "Llamada con",
+    incoming: "Llamada de",
+    missed: "Llamada perdida de",
+    notAnswered: "No contactado:",
+    errorEntity: "Indica una entidad FRITZ!Box Calllist.",
+    editorEntity: "Entidad",
+    editorTitle: "Titulo",
+    editorMaxItems: "Entradas",
+    editorFontSize: "Tamano de fuente",
+    editorNameFormat: "Formato del nombre",
+    nameFormatFirstLast: "Nombre Apellido",
+    nameFormatLastFirst: "Apellido Nombre",
+    cardDescription: "Muestra llamadas en directo y el historial de FRITZ!Box Calllist.",
+  },
+  it: {
+    empty: "Nessuna chiamata disponibile",
+    unknown: "Sconosciuto",
+    ringing: "Chiamata da",
+    dialing: "Chiamata a",
+    talking: "Chiamata con",
+    outgoing: "Chiamata con",
+    incoming: "Chiamata da",
+    missed: "Chiamata persa da",
+    notAnswered: "Non raggiunto:",
+    errorEntity: "Indica un'entita FRITZ!Box Calllist.",
+    editorEntity: "Entita",
+    editorTitle: "Titolo",
+    editorMaxItems: "Voci",
+    editorFontSize: "Dimensione carattere",
+    editorNameFormat: "Formato nome",
+    nameFormatFirstLast: "Nome Cognome",
+    nameFormatLastFirst: "Cognome Nome",
+    cardDescription: "Mostra chiamate live e cronologia da FRITZ!Box Calllist.",
+  },
+  nl: {
+    empty: "Geen oproepen beschikbaar",
+    unknown: "Onbekend",
+    ringing: "Oproep van",
+    dialing: "Oproep naar",
+    talking: "Gesprek met",
+    outgoing: "Gesprek met",
+    incoming: "Oproep van",
+    missed: "Gemiste oproep van",
+    notAnswered: "Niet bereikt:",
+    errorEntity: "Geef een FRITZ!Box Calllist-entiteit op.",
+    editorEntity: "Entiteit",
+    editorTitle: "Titel",
+    editorMaxItems: "Items",
+    editorFontSize: "Lettergrootte",
+    editorNameFormat: "Naamformaat",
+    nameFormatFirstLast: "Voornaam Achternaam",
+    nameFormatLastFirst: "Achternaam Voornaam",
+    cardDescription: "Toont live oproepen en oproepgeschiedenis van FRITZ!Box Calllist.",
   },
 };
 
 function normalizeLanguage(value) {
-  return String(value || "en").toLowerCase().startsWith("de") ? "de" : "en";
+  const language = String(value || "en").toLowerCase().split("-")[0];
+  return TRANSLATIONS[language] ? language : "en";
 }
 
 function isUnknownValue(value) {
@@ -106,7 +169,6 @@ class FritzboxCalllistCard extends HTMLElement {
       max_items: DEFAULT_MAX_ITEMS,
       font_size: DEFAULT_FONT_SIZE,
       name_format: DEFAULT_NAME_FORMAT,
-      language: "auto",
     };
   }
 
@@ -119,7 +181,6 @@ class FritzboxCalllistCard extends HTMLElement {
       max_items: DEFAULT_MAX_ITEMS,
       font_size: DEFAULT_FONT_SIZE,
       name_format: DEFAULT_NAME_FORMAT,
-      language: "auto",
       ...config,
     };
     this._renderSignature = undefined;
@@ -169,7 +230,7 @@ class FritzboxCalllistCard extends HTMLElement {
       entity: this.config.entity,
       state: entity?.state,
       updated: entity?.last_updated,
-      language: this.config.language === "auto" ? this._hass.language : this.config.language,
+      language: this.languageCode(),
       title: this.config.title || "",
       max_items: this.config.max_items || DEFAULT_MAX_ITEMS,
       font_size: this.config.font_size || DEFAULT_FONT_SIZE,
@@ -474,24 +535,20 @@ class FritzboxCalllistCard extends HTMLElement {
   }
 
   relativeTime(timestamp) {
-    const texts = this.localize();
     const diff = Math.max(0, Math.floor(Date.now() / 1000 - Number(timestamp || 0)));
-    let value;
-    if (diff < 60) value = `${diff} ${texts.seconds}`;
-    else if (diff < 3600) value = `${Math.floor(diff / 60)} ${texts.minutes}`;
-    else if (diff < 86400) value = `${Math.floor(diff / 3600)} ${texts.hours}`;
-    else value = `${Math.floor(diff / 86400)} ${texts.days}`;
-
-    return normalizeLanguage(this.config?.language === "auto" ? this._hass?.language : this.config?.language) === "de"
-      ? `${texts.before} ${value}`
-      : `${value} ${texts.before}`;
+    const formatter = new Intl.RelativeTimeFormat(this.languageCode(), { numeric: "always" });
+    if (diff < 60) return formatter.format(-diff, "second");
+    if (diff < 3600) return formatter.format(-Math.floor(diff / 60), "minute");
+    if (diff < 86400) return formatter.format(-Math.floor(diff / 3600), "hour");
+    return formatter.format(-Math.floor(diff / 86400), "day");
   }
 
   localize() {
-    const language = this.config?.language && this.config.language !== "auto"
-      ? this.config.language
-      : this._hass?.language;
-    return TRANSLATIONS[normalizeLanguage(language)];
+    return TRANSLATIONS[this.languageCode()];
+  }
+
+  languageCode() {
+    return normalizeLanguage(this._hass?.language);
   }
 
   escape(value) {
@@ -508,7 +565,6 @@ class FritzboxCalllistCardEditor extends HTMLElement {
       max_items: DEFAULT_MAX_ITEMS,
       font_size: DEFAULT_FONT_SIZE,
       name_format: DEFAULT_NAME_FORMAT,
-      language: "auto",
       ...config,
     };
     this.render(true);
@@ -525,7 +581,7 @@ class FritzboxCalllistCardEditor extends HTMLElement {
     }
 
     const texts = this.localize();
-    const languageKey = normalizeLanguage(this.config?.language === "auto" ? this._hass?.language : this.config?.language);
+    const languageKey = normalizeLanguage(this._hass?.language);
     const needsForm = force || !this._form || this._languageKey !== languageKey;
 
     if (needsForm) {
@@ -597,19 +653,6 @@ class FritzboxCalllistCardEditor extends HTMLElement {
           },
         },
       },
-      {
-        name: "language",
-        selector: {
-          select: {
-            options: [
-              { value: "auto", label: texts.langAuto },
-              { value: "de", label: texts.langGerman },
-              { value: "en", label: texts.langEnglish },
-            ],
-            mode: "dropdown",
-          },
-        },
-      },
     ];
   }
 
@@ -620,13 +663,12 @@ class FritzboxCalllistCardEditor extends HTMLElement {
       max_items: texts.editorMaxItems,
       font_size: texts.editorFontSize,
       name_format: texts.editorNameFormat,
-      language: texts.editorLanguage,
     };
     return labels[schema.name] || schema.name;
   }
 
   localize() {
-    return TRANSLATIONS[normalizeLanguage(this.config?.language === "auto" ? this._hass?.language : this.config?.language)];
+    return TRANSLATIONS[normalizeLanguage(this._hass?.language)];
   }
 }
 

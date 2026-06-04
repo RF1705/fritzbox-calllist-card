@@ -42,7 +42,6 @@ entity: sensor.fritzbox_calllist
 max_items: 4
 font_size: 14
 name_format: first_last
-language: auto
 ```
 
 The card includes a visual Lovelace editor for:
@@ -52,7 +51,6 @@ The card includes a visual Lovelace editor for:
 - number of visible entries
 - font size
 - name format
-- language (`auto`, `de`, `en`)
 
 ## Options
 
@@ -63,7 +61,6 @@ The card includes a visual Lovelace editor for:
 | `max_items` | number | `4` | Visible history entries |
 | `font_size` | number | `14` | Main text size in pixels |
 | `name_format` | string | `first_last` | Display names as `first_last` or `last_first` when the source uses `Last,First` |
-| `language` | string | `auto` | `auto`, `de` or `en` |
 
 ## Support
 
