@@ -4,6 +4,8 @@
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20me%20a%20coffee-rf1705-ffdd00?logo=buy-me-a-coffee&logoColor=000000)](https://buymeacoffee.com/rf1705)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
+[![Open your Home Assistant instance and open this repository in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=RF1705&repository=fritzbox-calllist-card&category=plugin)
+
 A Lovelace card for the [FRITZ!Box Calllist](https://github.com/RF1705/fritzbox-calllist) Home Assistant integration.
 
 It shows live calls, call duration and the persistent call history created by the integration.
