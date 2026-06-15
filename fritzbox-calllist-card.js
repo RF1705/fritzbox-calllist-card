@@ -319,12 +319,19 @@ class FritzboxCalllistCard extends HTMLElement {
       <style>
         :host {
           display: block;
+          height: 100%;
+        }
+
+        ha-card {
+          height: 100%;
         }
 
         .card {
           --fritzbox-calllist-font-size: ${fontSize}px;
           --fritzbox-calllist-row-height: ${rowHeight}px;
           --fritzbox-calllist-row-gap: ${ROW_GAP}px;
+          box-sizing: border-box;
+          min-height: 100%;
           padding: 16px;
         }
 
