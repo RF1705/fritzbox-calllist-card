@@ -4,7 +4,7 @@
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20me%20a%20coffee-rf1705-ffdd00?logo=buy-me-a-coffee&logoColor=000000)](https://buymeacoffee.com/rf1705)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-A Lovelace card for the [FRITZ!Box Calllist](https://github.com/RF1705/fritzbox-calllist) Home Assistant integration.
+A Lovelace card for the [FRITZ!Box Calllist](https://github.com/RF1705/fritzbox-calllist) Home Assistant integration, available directly through HACS.
 
 It shows live calls, call duration and the persistent call history created by the integration.
 
@@ -12,19 +12,16 @@ It shows live calls, call duration and the persistent call history created by th
 
 ### Install with My Home Assistant
 
-[![Open your Home Assistant instance and open this repository in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=RF1705&repository=fritzbox-calllist-card&category=plugin)
+[![Open your Home Assistant instance and open FRITZ!Box Calllist Card in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=RF1705&repository=fritzbox-calllist-card)
 
-### Manual HACS installation
+### Install through HACS
 
-1. Add this repository to HACS as a custom repository:
-
-   ```text
-   https://github.com/RF1705/fritzbox-calllist-card
-   ```
-
-2. Select the `Lovelace` category.
-3. Install `FRITZ!Box Calllist Card`.
+1. Open HACS in Home Assistant.
+2. Search for `FRITZ!Box Calllist Card`.
+3. Select the card and choose **Download**.
 4. Reload Home Assistant in your browser.
+
+No custom repository needs to be added.
 
 HACS should add the Lovelace resource automatically. If needed, add it manually:
 
