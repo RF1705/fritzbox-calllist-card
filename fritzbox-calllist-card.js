@@ -17,6 +17,7 @@ const TRANSLATIONS = {
     ringing: "Anruf von",
     dialing: "Anruf an",
     talking: "Gespräch mit",
+    answeringMachine: "Anrufbeantworter",
     outgoing: "Gespräch mit",
     incoming: "Anruf von",
     missed: "Verpasster Anruf von",
@@ -38,6 +39,7 @@ const TRANSLATIONS = {
     ringing: "Call from",
     dialing: "Call to",
     talking: "Call with",
+    answeringMachine: "Answering machine",
     outgoing: "Call with",
     incoming: "Call from",
     missed: "Missed call from",
@@ -58,6 +60,7 @@ const TRANSLATIONS = {
     ringing: "Appel de",
     dialing: "Appel vers",
     talking: "Appel avec",
+    answeringMachine: "Repondeur",
     outgoing: "Appel avec",
     incoming: "Appel de",
     missed: "Appel manque de",
@@ -78,6 +81,7 @@ const TRANSLATIONS = {
     ringing: "Llamada de",
     dialing: "Llamada a",
     talking: "Llamada con",
+    answeringMachine: "Contestador",
     outgoing: "Llamada con",
     incoming: "Llamada de",
     missed: "Llamada perdida de",
@@ -98,6 +102,7 @@ const TRANSLATIONS = {
     ringing: "Chiamata da",
     dialing: "Chiamata a",
     talking: "Chiamata con",
+    answeringMachine: "Segreteria telefonica",
     outgoing: "Chiamata con",
     incoming: "Chiamata da",
     missed: "Chiamata persa da",
@@ -118,6 +123,7 @@ const TRANSLATIONS = {
     ringing: "Oproep van",
     dialing: "Oproep naar",
     talking: "Gesprek met",
+    answeringMachine: "Antwoordapparaat",
     outgoing: "Gesprek met",
     incoming: "Oproep van",
     missed: "Gemiste oproep van",
@@ -138,6 +144,7 @@ const TRANSLATIONS = {
     ringing: "Polaczenie od",
     dialing: "Polaczenie do",
     talking: "Rozmowa z",
+    answeringMachine: "Automatyczna sekretarka",
     outgoing: "Rozmowa z",
     incoming: "Polaczenie od",
     missed: "Nieodebrane polaczenie od",
@@ -158,6 +165,7 @@ const TRANSLATIONS = {
     ringing: "Hovor od",
     dialing: "Hovor na",
     talking: "Hovor s",
+    answeringMachine: "Zaznamnik",
     outgoing: "Hovor s",
     incoming: "Hovor od",
     missed: "Zmeskany hovor od",
@@ -448,14 +456,15 @@ class FritzboxCalllistCard extends HTMLElement {
   }
 
   renderLive(live) {
-    const icon = this.liveIcon(live.state);
+    const icon = this.liveIcon(live.state, live.type);
+    const iconClass = live.type === "answering_machine" ? "answering_machine" : live.state;
     const label = this.liveLabel(live);
     const startedAt = Number(live.started_at || 0);
     const duration = Number(live.duration || 0);
 
     return `
       <div class="live-call">
-        <ha-icon class="${this.escape(live.state)}" icon="${icon}"></ha-icon>
+        <ha-icon class="${this.escape(iconClass)}" icon="${icon}"></ha-icon>
         <div class="live-content">
           <div class="label">${label}</div>
           <div class="duration" data-started-at="${startedAt}" data-duration="${duration}"></div>
@@ -480,7 +489,8 @@ class FritzboxCalllistCard extends HTMLElement {
     `;
   }
 
-  liveIcon(state) {
+  liveIcon(state, type) {
+    if (type === "answering_machine") return "mdi:voicemail";
     if (state === "ringing") return "mdi:phone-ring";
     if (state === "dialing") return "mdi:phone-clock";
     return "mdi:phone-in-talk";
@@ -490,6 +500,7 @@ class FritzboxCalllistCard extends HTMLElement {
     if (type === "outgoing") return "mdi:phone-outgoing";
     if (type === "missed") return "mdi:phone-missed";
     if (type === "not_answered") return "mdi:phone-remove";
+    if (type === "answering_machine") return "mdi:voicemail";
     return "mdi:phone-incoming";
   }
 
@@ -498,6 +509,7 @@ class FritzboxCalllistCard extends HTMLElement {
     const name = this.displayName(live.name, texts);
     const number = this.displayName(live.number, texts);
 
+    if (live.type === "answering_machine") return `${texts.answeringMachine}: ${name} (${number})`;
     if (live.state === "ringing") return `${texts.ringing}: ${name} (${number})`;
     if (live.state === "dialing") return `${texts.dialing}: ${name} (${number})`;
     return `${texts.talking}: ${name} (${number})`;
@@ -511,6 +523,7 @@ class FritzboxCalllistCard extends HTMLElement {
     if (call.type === "outgoing") return `${texts.outgoing} ${name} (${number})`;
     if (call.type === "missed") return `${texts.missed} ${name} (${number})`;
     if (call.type === "not_answered") return `${texts.notAnswered} ${name} (${number})`;
+    if (call.type === "answering_machine") return `${texts.answeringMachine}: ${name} (${number})`;
     if (call.type === "incoming") return `${texts.incoming} ${name} (${number})`;
     return this.escape(call.text || "");
   }
